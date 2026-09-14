@@ -1,3 +1,5 @@
+import { queryClient } from "@/lib/query/client";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { FlatList, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Animated, { FadeInDown } from "react-native-reanimated";
@@ -14,8 +16,10 @@ if (!publishableKey) {
 
 export default function RootLayout() {
   return (
-    <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
-      <Slot />
-    </ClerkProvider>
+     <QueryClientProvider client={queryClient}>
+      <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
+        <Slot />
+      </ClerkProvider>
+    </QueryClientProvider>
   );
 }
