@@ -7,6 +7,7 @@ import "../global.css";
 import { ClerkProvider } from '@clerk/expo'
 import { tokenCache } from '@clerk/expo/token-cache'
 import { Slot } from "expo-router";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!
 
@@ -16,10 +17,12 @@ if (!publishableKey) {
 
 export default function RootLayout() {
   return (
-     <QueryClientProvider client={queryClient}>
-      <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
-        <Slot />
-      </ClerkProvider>
-    </QueryClientProvider>
+    <GestureHandlerRootView style={{flex: 1}}>
+      <QueryClientProvider client={queryClient}>
+        <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
+          <Slot />
+        </ClerkProvider>
+      </QueryClientProvider>
+    </GestureHandlerRootView>
   );
 }
