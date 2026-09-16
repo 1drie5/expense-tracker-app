@@ -1,3 +1,4 @@
+import { BudgetModal } from "@/components/BudgetModal";
 import { TransactionRow } from "@/components/TransactionRow";
 import { getCategoryConfig } from "@/constants/categories";
 import { useAccountsQuery } from "@/hooks/queries/useAccountQuery";
@@ -83,7 +84,7 @@ export default function HomeScreen() {
 
   const totalBalance = useMemo(
     () => accounts.reduce((sum, account) => sum + account.balance, 0),
-    [accounts]
+    [accounts],
   );
 
   const monthTransactions = useMemo(() => {
@@ -96,19 +97,19 @@ export default function HomeScreen() {
       monthTransactions
         .filter((tx) => tx.type === "INCOME")
         .reduce((sum, tx) => sum + tx.amount, 0),
-    [monthTransactions]
+    [monthTransactions],
   );
   const monthExpense = useMemo(
     () =>
       monthTransactions
         .filter((tx) => tx.type === "EXPENSE")
         .reduce((sum, tx) => sum + tx.amount, 0),
-    [monthTransactions]
+    [monthTransactions],
   );
 
   const recentTransactions = useMemo(
     () => transactions.slice(0, 5),
-    [transactions]
+    [transactions],
   );
 
   const expenseBreakdown = useMemo(() => {
@@ -260,14 +261,14 @@ export default function HomeScreen() {
                     style={{
                       width: `${Math.min(
                         Math.round((monthExpense / budget.amount) * 100),
-                        100
+                        100,
                       )}%`,
                       backgroundColor:
                         monthExpense >= budget.amount
                           ? "#FF6B4A"
                           : monthExpense >= budget.amount * 0.8
-                          ? "#F7DC6F"
-                          : "#3DDC84",
+                            ? "#F7DC6F"
+                            : "#3DDC84",
                     }}
                   />
                 </View>
@@ -343,11 +344,20 @@ export default function HomeScreen() {
             </View>
           ) : (
             recentTransactions.map((tx) => (
-              <TransactionRow key={tx.id} tx={tx} />
+              <TransactionRow key={tx.id} tx={tx} onDelete={() => console.log("delete", tx.id)}/>
             ))
           )}
         </View>
       </ScrollView>
+
+      {user && (
+        <BudgetModal
+          visible={budgetModalOpen}
+          budget={budget}
+          onClose={() => setBudgetModalOpen(false)}
+          onSaved={() => setBudgetModalOpen(false)}
+        />
+      )}
     </SafeAreaView>
   );
 }
