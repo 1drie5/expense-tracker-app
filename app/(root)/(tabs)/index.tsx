@@ -344,7 +344,11 @@ export default function HomeScreen() {
             </View>
           ) : (
             recentTransactions.map((tx) => (
-              <TransactionRow key={tx.id} tx={tx} onDelete={() => console.log("delete", tx.id)}/>
+              <TransactionRow
+                key={tx.id}
+                tx={tx}
+                onDelete={() => console.log("delete", tx.id)}
+              />
             ))
           )}
         </View>

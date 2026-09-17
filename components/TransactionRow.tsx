@@ -2,8 +2,8 @@ import { getCategoryConfig } from "@/constants/categories";
 import { Transaction } from "@/lib/services/transactions";
 import { formatPrice } from "@/lib/utils";
 import { Feather } from "@expo/vector-icons";
-import Swipeable from "react-native-gesture-handler/ReanimatedSwipeable";
 import { Text, TouchableOpacity, View } from "react-native";
+import Swipeable from "react-native-gesture-handler/ReanimatedSwipeable";
 
 const INPUT_METHOD_ICON: Record<
   Transaction["input_method"],
@@ -50,7 +50,10 @@ export function TransactionRow({
             className="px-1.5 py-0.5 rounded-full"
             style={{ backgroundColor: `${config.color}1A` }}
           >
-            <Text className="text-[10px] font-medium" style={{ color: config.color }}>
+            <Text
+              className="text-[10px] font-medium"
+              style={{ color: config.color }}
+            >
               {config.label}
             </Text>
           </View>
