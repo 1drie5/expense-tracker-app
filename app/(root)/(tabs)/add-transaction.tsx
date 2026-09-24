@@ -1,4 +1,5 @@
 import { AIActionCard } from "@/components/AIActionCard";
+import { CalendarPicker } from "@/components/CalendarPicker";
 import { AI_GRADIENT, AI_GRADIENT_REVERSE } from "@/constants/theme";
 import { PillGroup } from "@/components/PillGroup";
 import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from "@/constants/categories";
@@ -12,6 +13,7 @@ import { Account } from "@/lib/services/accounts";
 import { InputMethod } from "@/types/transaction";
 import { useUser } from "@clerk/expo";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { format, isValid } from "date-fns";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -87,6 +89,39 @@ export default function AddTransactionScreen() {
     if (accounts.length > 0) resetForm(DEFAULT_VALUES(accounts));
   }, [accounts, resetForm]);
 
+  const onSubmit = async (values: TransactionFormValues) => {
+    if (!user) return;
+
+    setError("");
+
+    const parsed = parseFloat(values.amount.replace(/,/g, ""));
+
+    const { error: createError } = await createTransaction({
+      user_id: user.id,
+      account_id: values.accountId,
+      type: values.type,
+      amount: parsed,
+      category: values.category,
+      description: values.description?.trim() || null,
+      date: values.date.toISOString(),
+      input_method: inputMethod,
+      voice_transcript: inputMethod === "VOICE" ? voiceTranscript : null,
+    });
+
+    if (createError) {
+      setError("Something went wrong. Please try again.");
+      return;
+    }
+
+    resetForm(DEFAULT_VALUES(accounts));
+    setInputMethod("MANUAL");
+    setVoiceTranscript(null);
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace("/(root)/(tabs)/transactions");
+    }
+  };
   return (
     <SafeAreaView className="flex-1 bg-brand-body" edges={["top"]}>
       <View className="px-5 pt-3 pb-2">
@@ -207,6 +242,84 @@ export default function AddTransactionScreen() {
                 onChange={(key) => setValue("category", key)}
               />
             </View>
+
+            <Text className="text-brand-bg text-xs font-medium mb-1.5">
+              Account
+            </Text>
+            <View className="mb-1">
+              <PillGroup
+                options={accounts.map((a) => ({ key: a.id, label: a.name }))}
+                value={accountId}
+                onChange={(key) => setValue("accountId", key)}
+              />
+            </View>
+            {errors.accountId && (
+              <Text className="text-brand-coral text-xs mb-3">
+                {errors.accountId.message}
+              </Text>
+            )}
+            <View className="mb-3" />
+
+            <Text className="text-brand-bg text-xs font-medium mb-1.5">
+              Date
+            </Text>
+            <TouchableOpacity
+              onPress={() => setDatePickerOpen((v) => !v)}
+              className="flex-row items-center justify-between bg-white border border-[#E8E6DF] rounded-xl px-4 py-3.5 mb-1"
+            >
+              <Text className="text-sm text-brand-bg">
+                {format(date, "d MMM yyyy")}
+              </Text>
+              <Feather name="calendar" size={16} color="#5C5F68" />
+            </TouchableOpacity>
+
+            {datePickerOpen && (
+              <View className="bg-white border border-[#E8E6DF] rounded-xl mb-4 overflow-hidden">
+                <CalendarPicker
+                  value={date}
+                  maximumDate={new Date()}
+                  onChange={(selectedDate) => {
+                    setValue("date", selectedDate);
+                    setDatePickerOpen(false);
+                  }}
+                />
+              </View>
+            )}
+            {!datePickerOpen && <View className="mb-4" />}
+
+            <Text className="text-brand-bg text-xs font-medium mb-1.5">
+              Description (optional)
+            </Text>
+            <Controller
+              control={control}
+              name="description"
+              render={({ field: { value, onChange, onBlur } }) => (
+                <TextInput
+                  value={value}
+                  onChangeText={onChange}
+                  onBlur={onBlur}
+                  placeholder="e.g. Swiggy order"
+                  placeholderTextColor="#8A8D96"
+                  className="bg-white border border-[#E8E6DF] rounded-xl px-4 py-3.5 mb-4 text-sm text-brand-bg"
+                />
+              )}
+            />
+
+            {error ? (
+              <Text className="text-brand-coral text-xs mb-4">{error}</Text>
+            ) : null}
+
+            <TouchableOpacity
+              onPress={handleSubmit(onSubmit)}
+              disabled={saving}
+              className="bg-brand-bg rounded-xl py-4 items-center mb-2"
+              activeOpacity={0.85}
+            >
+              <Text className="text-white text-sm font-semibold">
+                {saving ? "Saving…" : "Save transaction"}
+              </Text>
+            </TouchableOpacity>
+
         </ScrollView>
         )}
       </KeyboardAvoidingView>
