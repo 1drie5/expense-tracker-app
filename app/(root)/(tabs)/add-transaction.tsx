@@ -2,7 +2,12 @@ import { AIActionCard } from "@/components/AIActionCard";
 import { CalendarPicker } from "@/components/CalendarPicker";
 import { AI_GRADIENT, AI_GRADIENT_REVERSE } from "@/constants/theme";
 import { PillGroup } from "@/components/PillGroup";
-import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from "@/constants/categories";
+import { ReceiptScannerModal } from "@/components/ReceiptScannerModal";
+import {
+  CategoryKey,
+  EXPENSE_CATEGORIES,
+  INCOME_CATEGORIES,
+} from "@/constants/categories";
 import { useCreateTransaction } from "@/hooks/mutations/useTransactionMutations";
 import { useAccountsQuery } from "@/hooks/queries/useAccountQuery";
 import {
@@ -10,6 +15,10 @@ import {
   transactionSchema,
 } from "@/lib/schemas/transactions";
 import { Account } from "@/lib/services/accounts";
+import {
+  ExtractedTransaction,
+  extractTransactionFromReceipt,
+} from "@/lib/services/extractTransaction";
 import { InputMethod } from "@/types/transaction";
 import { useUser } from "@clerk/expo";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -19,6 +28,7 @@ import React, { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
   ActivityIndicator,
+  Alert,
   KeyboardAvoidingView,
   Platform,
   Text,
@@ -88,6 +98,50 @@ export default function AddTransactionScreen() {
   useEffect(() => {
     if (accounts.length > 0) resetForm(DEFAULT_VALUES(accounts));
   }, [accounts, resetForm]);
+
+  const applyExtraction = (result: ExtractedTransaction) => {
+    const categoryList =
+      result.type === "INCOME" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
+    const isValidCategory = (key: CategoryKey | null): key is CategoryKey =>
+      !!key && categoryList.some((c) => c.key === key);
+
+    if (result.type) setValue("type", result.type);
+    if (isValidCategory(result.category)) setValue("category", result.category);
+    if (result.amount != null) setValue("amount", String(result.amount));
+    if (result.description) setValue("description", result.description);
+    if (result.date) {
+      const parsedDate = new Date(result.date);
+      if (isValid(parsedDate) && parsedDate <= new Date()) {
+        setValue("date", parsedDate);
+      }
+    }
+
+    const missing = [
+      result.amount == null && "amount",
+      !isValidCategory(result.category) && "category",
+    ].filter(Boolean);
+    if (missing.length > 0) {
+      Alert.alert(
+        "Review before saving",
+        `Couldn't confidently read the ${missing.join(" and ")}. Please fill it in.`
+      );
+    }
+  };
+
+  const handleReceiptCaptured = async (base64: string, mimeType: string) => {
+    setScannerOpen(false);
+    setScanning(true);
+    try {
+      const extracted = await extractTransactionFromReceipt(base64, mimeType);
+      applyExtraction(extracted);
+      setInputMethod("RECEIPT_SCAN");
+    } catch (err) {
+      console.error("Receipt scan failed:", err);
+      Alert.alert("Error", "Couldn't read that receipt. Try again or enter it manually.");
+    } finally {
+      setScanning(false);
+    }
+  };
 
   const onSubmit = async (values: TransactionFormValues) => {
     if (!user) return;
@@ -323,6 +377,21 @@ export default function AddTransactionScreen() {
         </ScrollView>
         )}
       </KeyboardAvoidingView>
+
+       {scanning && (
+        <View className="absolute inset-0 items-center justify-center bg-black/40">
+          <View className="bg-white rounded-2xl px-6 py-5 items-center">
+            <ActivityIndicator color="#4A9EFF" />
+            <Text className="text-brand-bg text-sm mt-3">Reading receipt…</Text>
+          </View>
+        </View>
+      )}
+
+       <ReceiptScannerModal
+        visible={scannerOpen}
+        onClose={() => setScannerOpen(false)}
+        onCaptured={handleReceiptCaptured}
+      />
     </SafeAreaView>
   );
 }
