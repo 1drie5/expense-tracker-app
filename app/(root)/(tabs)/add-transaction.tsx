@@ -3,6 +3,7 @@ import { CalendarPicker } from "@/components/CalendarPicker";
 import { AI_GRADIENT, AI_GRADIENT_REVERSE } from "@/constants/theme";
 import { PillGroup } from "@/components/PillGroup";
 import { ReceiptScannerModal } from "@/components/ReceiptScannerModal";
+import { VoiceRecorderModal } from "@/components/VoiceRecorderModal";
 import {
   CategoryKey,
   EXPENSE_CATEGORIES,
@@ -142,6 +143,22 @@ export default function AddTransactionScreen() {
       setScanning(false);
     }
   };
+
+  const handleVoiceExtracted = (result: ExtractedTransaction) => {
+    applyExtraction(result);
+    setVoiceTranscript(result.transcript);
+    setInputMethod("VOICE");
+  };
+
+  useEffect(() => {
+    if (params.action === "scan") {
+      setScannerOpen(true);
+      router.setParams({ action: undefined });
+    } else if (params.action === "voice") {
+      setVoiceModalOpen(true);
+      router.setParams({ action: undefined });
+    }
+  }, [params.action, router]);
 
   const onSubmit = async (values: TransactionFormValues) => {
     if (!user) return;
@@ -392,6 +409,13 @@ export default function AddTransactionScreen() {
         onClose={() => setScannerOpen(false)}
         onCaptured={handleReceiptCaptured}
       />
+
+      <VoiceRecorderModal
+        visible={voiceModalOpen}
+        onClose={() => setVoiceModalOpen(false)}
+        onExtracted={handleVoiceExtracted}
+      />
+      
     </SafeAreaView>
   );
 }
