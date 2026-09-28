@@ -1,7 +1,7 @@
 import { BudgetModal } from "@/components/BudgetModal";
 import { TransactionRow } from "@/components/TransactionRow";
 import { getCategoryConfig } from "@/constants/categories";
-import { useAccountsQuery } from "@/hooks/queries/useAccountQuery";
+import { useAccountsQuery } from "@/hooks/queries/useAccountsQuery";
 import { useBudgetQuery } from "@/hooks/queries/useBudgetQuery";
 import { useTransactionsQuery } from "@/hooks/queries/useTransactionsQuery";
 import { Transaction } from "@/lib/services/transactions";

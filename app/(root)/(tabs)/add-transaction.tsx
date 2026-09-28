@@ -10,7 +10,7 @@ import {
   INCOME_CATEGORIES,
 } from "@/constants/categories";
 import { useCreateTransaction } from "@/hooks/mutations/useTransactionMutations";
-import { useAccountsQuery } from "@/hooks/queries/useAccountQuery";
+import { useAccountsQuery } from "@/hooks/queries/useAccountsQuery";
 import {
   TransactionFormValues,
   transactionSchema,

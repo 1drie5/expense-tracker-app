@@ -1,6 +1,6 @@
 import { TransactionRow } from "@/components/TransactionRow";
 import { useDeleteTransaction } from "@/hooks/mutations/useTransactionMutations";
-import { useAccountsQuery } from "@/hooks/queries/useAccountQuery";
+import { useAccountsQuery } from "@/hooks/queries/useAccountsQuery";
 import { useTransactionsQuery } from "@/hooks/queries/useTransactionsQuery";
 import { Transaction, TransactionType } from "@/lib/services/transactions";
 import { exportTransactionsToCsv } from "@/lib/utils/exportTransactions";
