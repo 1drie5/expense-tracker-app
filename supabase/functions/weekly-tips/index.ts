@@ -1,10 +1,10 @@
 // Scheduled weekly (see scripts/cron_jobs.sql). For every user with at least
 // one transaction in the last 7 days, asks Gemini for a few short,
 // personalized tips based on their spending and emails them.
-import { getCategoryConfig } from "../../../constants/categories";
-import { wrapEmail } from "../_shared/emailLayout";
-import { sendEmail } from "../_shared/resend";
-import { createSupabaseAdmin } from "../_shared/supabaseAdmin";
+import { getCategoryConfig } from "../_shared/categories.ts";
+import { wrapEmail } from "../_shared/emailLayout.ts";
+import { sendEmail } from "../_shared/resend.ts";
+import { createSupabaseAdmin } from "../_shared/supabaseAdmin.ts";
 
 const GEMINI_URL =
   "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent";
